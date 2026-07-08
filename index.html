@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مطعم حمزة السوري | أشهى المأكولات السورية</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .text-orange-600 { color: #f97316; }
+        .bg-orange-600 { background-color: #f97316; }
+        .border-orange-600 { border-color: #f97316; }
+        .hover\:bg-orange-700:hover { background-color: #ea580c; }
+        .hover\:text-orange-600:hover { color: #f97316; }
+        .focus\:ring-orange-600:focus {
+            --tw-ring-color: #f97316;
+        }
+        /* Page transition styles */
+        .page { display: none; animation: fadeIn 0.5s ease-in-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .menu-item:hover img { transform: scale(1.05); }
+        .menu-item img { transition: transform 0.4s ease; }
+        .required-field::after {
+            content: '*';
+            color: red;
+            margin-inline-start: 4px;
+        }
+        /* Spinner for loading state */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #fff;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2d3748;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: bottom 0.5s ease-in-out;
+            z-index: 100;
+        }
+        #toast.show {
+            bottom: 30px;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-orange-600 home-link" data-translate-key="store_name">مطعم حمزة السوري</a>
+            <div class="hidden md:flex items-center space-x-8 rtl:space-x-reverse">
+                <a href="#menu" class="text-gray-600 hover:text-orange-600 transition duration-300 nav-link" data-translate-key="nav_shop">المنيو</a>
+                <a href="#about" class="text-gray-600 hover:text-orange-600 transition duration-300 nav-link" data-translate-key="nav_about">عنّا</a>
+                <a href="#customer-service" class="text-gray-600 hover:text-orange-600 transition duration-300 nav-link" data-translate-key="cs_title">خدمة العملاء</a>
+                <a href="#contact" class="text-gray-600 hover:text-orange-600 transition duration-300 nav-link" data-translate-key="nav_contact">اتصل بنا</a>
+            </div>
+            <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                 <button id="lang-switcher" class="text-gray-600 hover:text-orange-600 focus:outline-none">
+                     <span id="lang-text">English</span>
+                 </button>
+                <button id="cart-button" class="relative text-orange-600 hover:opacity-80 focus:outline-none">
+                    <i class="fas fa-shopping-cart text-2xl"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-3 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">0</span>
+                </button>
+                <button id="mobile-menu-button" class="md:hidden flex items-center text-orange-600">
+                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 border-t border-gray-200">
+            <a href="#menu" class="block py-2 text-gray-600 hover:text-orange-600 nav-link" data-translate-key="nav_shop">المنيو</a>
+            <a href="#about" class="block py-2 text-gray-600 hover:text-orange-600 nav-link" data-translate-key="nav_about">عنّا</a>
+            <a href="#customer-service" class="block py-2 text-gray-600 hover:text-orange-600 nav-link" data-translate-key="cs_title">خدمة العملاء</a>
+            <a href="#contact" class="block py-2 text-gray-600 hover:text-orange-600 nav-link" data-translate-key="nav_contact">اتصل بنا</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen">
+        
+        <!-- Main Page Container (Visible to customers) -->
+        <div id="main-page" class="page">
+            <section id="home" class="pt-20 md:pt-0">
+                <div class="relative h-screen flex items-center justify-center -mt-24">
+                    <img src="photo/WhatsApp Image 2025-07-25 at 2.33.25 AM.jpeg" alt="ديكور مطعم سوري أصيل مع إضاءة دافئة وطاولات أنيقة"
+                         class="absolute inset-0 w-full h-full object-cover opacity-70"/>
+                    <div class="absolute inset-0 bg-black opacity-40"></div>
+                    <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+                        <h1 class="text-4xl md:text-6xl font-bold text-white mb-4" data-translate-key="hero_title">مطعم حمزة السوري</h1>
+                        <p class="text-xl md:text-2xl text-white mb-8" data-translate-key="hero_subtitle">نقدم لكم أشهى المأكولات السورية الأصيلة في قلب أسيوط</p>
+                        <div class="flex flex-wrap justify-center gap-4">
+                            <a href="#menu" class="bg-orange-600 text-white px-8 py-3 rounded-md text-lg hover:bg-orange-700 transition" data-translate-key="hero_cta">شاهد المنيو</a>
+                            <a href="#contact" class="bg-white text-orange-600 px-8 py-3 rounded-md text-lg hover:bg-gray-100 transition" data-translate-key="nav_contact">احجز الآن</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="menu" class="py-20 bg-transparent">
+                <div class="container mx-auto px-4">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4" data-translate-key="menu_title">قائمة طعامنا</h2>
+                        <div class="w-20 h-1 bg-orange-600 mx-auto"></div>
+                        <p class="text-gray-600 mt-4 max-w-2xl mx-auto" data-translate-key="menu_subtitle">مذاق الشام الأصيل بين يديك، بإشراف شيفات سوريين</p>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
+                        <div id="category-filters" class="flex flex-wrap justify-center gap-2"></div>
+                        
+                        <div class="relative w-full md:w-1/3">
+                            <input type="text" id="search-input" class="w-full bg-white border border-gray-300 rounded-full py-2 pl-4 pr-10 rtl:pr-4 rtl:pl-10 focus:outline-none focus:ring-2 focus:ring-orange-600" placeholder="ابحث عن طبق..." data-translate-key="search_placeholder">
+                            <span class="absolute top-1/2 -translate-y-1/2 right-4 rtl:right-auto rtl:left-4 text-gray-400"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+
+                    <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        <!-- Menu items will be injected here by JavaScript -->
+                    </div>
+                </div>
+            </section>
+            
+            <section id="about" class="bg-white py-20 rounded-lg shadow-md mb-12">
+                 <div class="text-center mb-12">
+                     <h2 class="text-4xl font-bold text-gray-800" data-translate-key="nav_about">قصتنا</h2>
+                 </div>
+                 <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                     <div class="rounded-lg overflow-hidden shadow-xl">
+                         <img src="photo/sheef.jpeg" alt="شيف سوري يحضر الطعام" class="w-full h-full object-cover">
+                     </div>
+                     <div class="flex flex-col justify-center">
+                         <h3 class="text-3xl font-bold mb-4 text-orange-600" data-translate-key="about_title">تجربة طعام سورية أصيلة</h3>
+                         <p class="text-gray-700 leading-relaxed text-lg mb-4" data-translate-key="about_text_1">في مطعم حمزة السوري، نلتزم بتقديم المأكولات الشامية الأصيلة التي تحكي قصة التراث الغني للمطبخ السوري. يستخدم شيفاتنا السوريون المهرة الوصفات التقليدية والمكونات الطازجة لضمان تجربة لا تُنسى.</p>
+                         <p class="text-gray-700 leading-relaxed text-lg mb-6" data-translate-key="about_text_2">من الشاورما اللذيذة والفتات الغنية إلى المشاوي المتقنة والبروستد المقرمش، كل طبق يُعد بعناية وشغف ليُرضي جميع الأذواق.</p>
+                         <div class="grid grid-cols-2 gap-4">
+                             <div class="flex items-center"><div class="bg-orange-100 p-3 rounded-full mr-3 rtl:ml-3 rtl:mr-0"><i class="fas fa-utensils text-orange-600"></i></div><span class="font-medium" data-translate-key="feature_1">وصفات سورية أصيلة</span></div>
+                             <div class="flex items-center"><div class="bg-orange-100 p-3 rounded-full mr-3 rtl:ml-3 rtl:mr-0"><i class="fas fa-leaf text-orange-600"></i></div><span class="font-medium" data-translate-key="feature_2">مكونات طازجة يومياً</span></div>
+                             <div class="flex items-center"><div class="bg-orange-100 p-3 rounded-full mr-3 rtl:ml-3 rtl:mr-0"><i class="fas fa-pepper-hot text-orange-600"></i></div><span class="font-medium" data-translate-key="feature_3">نكهات غنية ومميزة</span></div>
+                             <div class="flex items-center"><div class="bg-orange-100 p-3 rounded-full mr-3 rtl:ml-3 rtl:mr-0"><i class="fas fa-star text-orange-600"></i></div><span class="font-medium" data-translate-key="feature_4">تجربة عملاء ممتازة</span></div>
+                         </div>
+                     </div>
+                 </div>
+            </section>
+            
+            <section id="testimonials" class="py-16 bg-orange-50 rounded-lg shadow-md mb-12">
+                <div class="container mx-auto px-4">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4" data-translate-key="testimonials_title">ماذا يقول ضيوفنا</h2>
+                        <div class="w-20 h-1 bg-orange-600 mx-auto"></div>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-white p-8 rounded-lg shadow-md text-center">
+                            <div class="flex justify-center mb-4 text-orange-500"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <p class="text-gray-600 italic mb-4" data-translate-key="testimonial_1_text">"الشاورما هنا لا يعلى عليها! طعم أصيل يذكرني بدمشق. أنصح بها بشدة!"</p>
+                            <div><h4 class="font-bold" data-translate-key="testimonial_1_name">أحمد محمود</h4><p class="text-gray-500 text-sm" data-translate-key="testimonial_1_desc">زبون دائم</p></div>
+                        </div>
+                        <div class="bg-white p-8 rounded-lg shadow-md text-center">
+                            <div class="flex justify-center mb-4 text-orange-500"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <p class="text-gray-600 italic mb-4" data-translate-key="testimonial_2_text">"جودة البروستد ممتازة والفتة غنية جداً. تجربة سورية متكاملة وممتعة."</p>
+                            <div><h4 class="font-bold" data-translate-key="testimonial_2_name">فاطمة الزهراء</h4><p class="text-gray-500 text-sm" data-translate-key="testimonial_2_desc">زائرة جديدة</p></div>
+                        </div>
+                        <div class="bg-white p-8 rounded-lg shadow-md text-center">
+                            <div class="flex justify-center mb-4 text-orange-500"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <p class="text-gray-600 italic mb-4" data-translate-key="testimonial_3_text">"أفضل مطعم سوري في أسيوط! الأسعار مناسبة والطعم رائع. أوصي بالميكس عربي."</p>
+                            <div><h4 class="font-bold" data-translate-key="testimonial_3_name">كريم عبد الله</h4><p class="text-gray-500 text-sm" data-translate-key="testimonial_3_desc">عاشق الطعام السوري</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Customer Service Section -->
+            <section id="customer-service" class="py-20 bg-orange-50 rounded-lg shadow-md mb-12">
+                <div class="container mx-auto px-4 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4" data-translate-key="cs_title">خدمة العملاء</h2>
+                    <p class="text-gray-600 mt-4 max-w-3xl mx-auto mb-8" data-translate-key="cs_subtitle">
+                        تواصل مباشر وسريع للرد على جميع استفساراتكم. سواء كنتم ترغبون في الاستفسار عن قائمة الطعام، متابعة طلب، أو تقديم أي ملاحظات، فريقنا جاهز لمساعدتكم.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="https://wa.me/201063300305" target="_blank" rel="noopener noreferrer" class="bg-green-500 text-white px-8 py-3 rounded-md text-lg hover:bg-green-600 transition flex items-center gap-3">
+                            <i class="fab fa-whatsapp"></i> <span data-translate-key="cs_whatsapp">تحدث معنا عبر واتساب</span>
+                        </a>
+                        <a href="tel:01110575585" class="bg-orange-600 text-white px-8 py-3 rounded-md text-lg hover:bg-orange-700 transition flex items-center gap-3">
+                            <i class="fas fa-phone"></i> <span data-translate-key="cs_call">اتصل بنا مباشرة</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contact" class="bg-white py-20 rounded-lg shadow-md">
+                 <div class="text-center mb-12">
+                     <h2 class="text-4xl font-bold text-gray-800" data-translate-key="nav_contact">تواصل معنا</h2>
+                      <p class="text-gray-600 mt-2" data-translate-key="contact_subtitle">نسعد باستقبالكم وطلباتكم.</p>
+                 </div>
+                 <div class="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                     <div class="space-y-6">
+                         <h3 class="text-2xl font-bold text-orange-600" data-translate-key="contact_details">معلومات التواصل</h3>
+                         <p class="flex items-start text-lg"><i class="fas fa-map-marker-alt w-6 text-center mr-3 rtl:ml-3 text-orange-600 pt-1"></i> <span data-translate-key="address_value">خلف برج العلا شارع الأزهر ميدان اسماء الله حي شرق، 55WG+PPR، الوليدية الوسطانية، قسم ثان أسيوط، محافظة أسيوط 2091203، مصر</span></p>
+                         <p class="flex items-center text-lg"><i class="fab fa-whatsapp w-6 text-center mr-3 rtl:ml-3 text-orange-600"></i> <a href="https://wa.me/201063300305" target="_blank" class="hover:underline">01063300305</a></p>
+                         <p class="flex items-center text-lg"><i class="fas fa-phone w-6 text-center mr-3 rtl:ml-3 text-orange-600"></i> <a href="tel:01110575585" class="hover:underline">01110575585</a></p>
+                         <p class="flex items-center text-lg"><i class="fas fa-envelope w-6 text-center mr-3 rtl:ml-3 text-orange-600"></i> <span>info@hamzabistro.com</span></p>
+                     </div>
+                      <div id="map-container" class="h-96 rounded-lg overflow-hidden shadow-md border">
+                          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3539.113979452834!2d31.17688801505796!3d27.18413698308009!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14452781a5555555%3A0x579f3e4a2b5a6d31!2sHamza's%20Restaurant!5e0!3m2!1sen!2seg!4v1662552824933!5m2!1sen!2seg" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                     </div>
+                 </div>
+            </section>
+        </div>
+
+        <!-- Other Pages Containers (Product Detail, Checkout, etc.) -->
+        <div id="product-detail-page" class="page"></div>
+        <div id="checkout-page" class="page"></div>
+        <div id="confirmation-page" class="page"></div>
+        <!-- Admin Orders Page (Hidden by default) -->
+        <div id="admin-orders-page" class="page"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white pt-12 pb-8">
+        <div class="container mx-auto px-6 text-center">
+            <h3 class="text-2xl font-bold" data-translate-key="store_name">مطعم حمزة السوري</h3>
+            <p class="text-gray-400 mt-2 mb-6 max-w-lg mx-auto" data-translate-key="footer_about">أشهى المأكولات السورية الأصيلة بجودة لا تضاهى.</p>
+            <div class="flex justify-center space-x-6 rtl:space-x-reverse mb-8">
+                <a href="https://www.facebook.com/share/1CkU47PwQy/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition text-2xl"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://wa.me/201063300305" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition text-2xl"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <p class="text-gray-500 text-sm mt-4" data-translate-key="footer_rights">&copy; 2025 مطعم حمزة السوري. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-1/3 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-xl font-bold" data-translate-key="cart_title">سلة الطلبات</h3>
+                <button id="close-cart-modal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            </div>
+            <div id="cart-items" class="p-4 overflow-y-auto"></div>
+            <div id="cart-footer" class="p-4 border-t mt-auto">
+                <div class="flex justify-between items-center font-bold text-lg mb-4">
+                    <span data-translate-key="cart_total">الإجمالي</span>
+                    <span id="cart-total">0.00</span>
+                </div>
+                <button id="checkout-button" class="w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition-all" data-translate-key="cart_checkout">إتمام الطلب</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Element -->
+    <div id="toast"></div>
+
+    <!-- Firebase SDKs (Modular v9+) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // Your provided Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHjO77X_vYdU-cRmCs8ufJWvwNHjTEQ5E",
+            authDomain: "hamza-syrian-restaurant.firebaseapp.com",
+            projectId: "hamza-syrian-restaurant",
+            storageBucket: "hamza-syrian-restaurant.appspot.com",
+            messagingSenderId: "699888917630",
+            appId: "1:699888917630:web:b4565631310607c9c64c2f",
+            measurementId: "G-DMSLN7Z5LL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Sign in user anonymously
+            signInAnonymously(auth).catch((error) => {
+                console.error("Error signing in anonymously:", error);
+            });
+
+            const state = {
+                lang: 'ar',
+                cart: [],
+                shippingInfo: {},
+                products: [
+                    // --- UNIQUE IDs ASSIGNED & ORIGINAL IMAGES RESTORED ---
+                    // Shawarma
+                    { id: 1, name_ar: "شاورما كبير +كرسبي كبير +فاهيتاكبير", name_en: "Large Shawarma + Large Crispy + Large Fajita", category_ar: "ركن الشاورما", category_en: "Shawarma Corner", description_ar: "مزيج من شاورما الدجاج، قطع الكرسبي المقرمشة، والفاهيتا الغنية بالنكهة.", price: 135, image: "photo/WhatsApp Image 2025-07-25 at 2.42.29 AM.jpeg" },
+                    { id: 2, name_ar: "شاورما دجاج وسط", name_en: "Medium Chicken Shawarma", category_ar: "ركن الشاورما", category_en: "Shawarma Corner", description_ar: "نكهة الشاورما السورية الأصيلة في حجم مثالي.", price: 120, image: "photo/شاورما.jpeg" },
+                    // Fatteh
+                    { id: 3, name_ar: "فتة شاورما لارج +1كرسبي +1 كفتة", name_en: "Large Fatteh Shawarma +1 Crispy +1 Kofta", category_ar: "ركن الفتات", category_en: "Fatteh Corner", description_ar: "فتة شاورما غنية مع الأرز، بطاطس، تومية، وقطع من الكرسبي والكفتة.", price: 110, image: "photo/فتة.jpeg" },
+                    { id: 4, name_ar: "3 كرسبي +3 كفتة", name_en: "3 Crispy + 3 Kofta", category_ar: "ركن الفتات", category_en: "Fatteh Corner", description_ar: "وجبة مشبعة من قطع الدجاج الكرسبي وكفتة الدجاج مع ارز وبطاطس وتومية.", price: 115, image: "photo/كرسبي.jpeg" },
+                    // Offers
+                    { id: 5, name_ar: "العرض الاول", name_en: "Offer 1", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "العرض الاول: وجبة متكاملة بسعر خاص.", price: 325, image: "photo2/العرض الاول 325.jpeg" },
+                    { id: 6, name_ar: "العرض الثاني", name_en: "Offer 2", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "العرض الثاني: وجبة متكاملة بسعر خاص.", price: 310, image: "photo2/310 العرض الثاني.jpeg" },
+                    { id: 7, name_ar: "العرض الثالث", name_en: "Offer 3", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "العرض الثالث: وجبة متكاملة بسعر خاص.", price: 295, image: "photo2/295 العرض الثالث.jpeg" },
+                    { id: 8, name_ar: "العرض الرابع", name_en: "Offer 4", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "العرض الرابع: وجبة متكاملة بسعر خاص.", price: 340, image: "photo2/340 العرض الرابع.jpeg" },
+                    { id: 9, name_ar: "العرض الخامس", name_en: "Offer 5", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "العرض الخامس: وجبة متكاملة بسعر خاص.", price: 520, image: "photo2/520 العرض الخامس.jpeg" },
+                    { id: 10, name_ar: "فتة شاورما لارج+1كرسبي +1كفتة (عرض)", name_en: "Large Shawarma Fatteh +1 Crispy +1 Kofta (Offer)", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "وجبة عائلية من شرائح الشاورما السورية.", price: 120, image: "photo/عرض1.jpeg" },
+                    { id: 11, name_ar: "سيخ شيش +قطعة كرسبي +س شاورما وسط", name_en: "Shish Skewer + Crispy Piece + M Shawarma", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "لمة الأحباب مع تشكيلة شهية.", price: 135, image: "photo/عرض 2.jpeg" },
+                    { id: 12, name_ar: "3 كرسبي +3 كفتة (عرض)", name_en: "3 Crispy + 3 Kofta (Offer)", category_ar: "ركن العروض", category_en: "Offers Corner", description_ar: "تكفي كل العائلة والأصدقاء!", price: 125, image: "photo/عرض 3.jpeg" },
+                    // Broasted
+                    { id: 13, name_ar: "3 بروست +2كرسبي +2كفتة", name_en: "3 Broasted + 2 Crispy + 2 Kofta", category_ar: "ركن البروستد", category_en: "Broasted Corner", description_ar: "مزيج يرضي الجميع من البروستد والكرسبي والكفتة.", price: 175, image: "photo2/175.jpeg" },
+                    { id: 14, name_ar: "2بروست + 1كرسبي +1 كفتة", name_en: "2 Broasted + 1 Crispy + 1 Kofta", category_ar: "ركن البروستد", category_en: "Broasted Corner", description_ar: "ارز، بطاطس، تومية عادي.", price: 120, image: "photo/بروسا 2.jpeg" },
+                    { id: 15, name_ar: "ربع فرخة بروست", name_en: "Quarter Broasted Chicken", category_ar: "ركن البروستد", category_en: "Broasted Corner", description_ar: "ارز، بطاطس، تومية عادية.", price: 105, image: "photo/بروست.jpeg" },
+                    // Grilled
+                    { id: 16, name_ar: "ربع فراخ صدر مشوي علي الفحم", name_en: "Charcoal Grilled Chicken Breast", category_ar: "ركن مشوي الفحم", category_en: "Grilled Corner", description_ar: "ربع فراخ صدر مشوي.", price: 110, image: "photo2/110.jpeg" },
+                    { id: 17, name_ar: "ربع فرخة ورك فحم", name_en: "Quarter Grilled Chicken Thigh", category_ar: "ركن مشوي الفحم", category_en: "Grilled Corner", description_ar: "ارز، بطاطس، تومية عادية.", price: 110, image: "photo/شوي2.jpeg" },
+                    { id: 18, name_ar: "ربع صدر فحم", name_en: "Quarter Grilled Chicken Breast", category_ar: "ركن مشوي الفحم", category_en: "Grilled Corner", description_ar: "ارز، بطاطس، تومية عادية.", price: 100, image: "photo/مشوي1.jpeg" },
+                    { id: 19, name_ar: "حواوشي", name_en: "Hawawshi", category_ar: "ركن مشوي الفحم", category_en: "Grilled Corner", description_ar: "حواوشي على الطريقة السورية.", price: 75, image: "photo2/حواوشي.jpeg" },
+                    // Menu Items
+                    { id: 22, name_ar: "شاورما كبير", name_en: "Large Chicken Shawarma", category_ar: "المنيو", category_en: "Menu", description_ar: "قطعة دجاج مشوية متبلة، ملفوفة بخبز الصاج.", price: 60, image: "photo2/منيو.jpeg" },
+                    { id: 23, name_ar: "شاورما وسط", name_en: "Medium Chicken Shawarma", category_ar: "المنيو", category_en: "Menu", description_ar: "قطعة دجاج مشوية متبلة، ملفوفة بخبز الصاج.", price: 40, image: "photo2/منيو.jpeg" },
+                    { id: 24, name_ar: "فتة شاورما دجاج", name_en: "Chicken Shawarma Fatteh", category_ar: "المنيو", category_en: "Menu", description_ar: "ارز، بطاطس، تومية.", price: 90, image: "photo2/منيو.jpeg" },
+                    { id: 25, name_ar: "فتة شاورما ميني", name_en: "Mini Shawarma Fatteh", category_ar: "المنيو", category_en: "Menu", description_ar: "ارز، بطاطس، تومية.", price: 70, image: "photo2/منيو.jpeg" },
+                    { id: 26, name_ar: "فتة كرسبي دجاج", name_en: "Crispy Chicken Fatteh", category_ar: "المنيو", category_en: "Menu", description_ar: "ارز، بطاطس، تومية.", price: 80, image: "photo2/منيو.jpeg" },
+                    { id: 27, name_ar: "ربع فرخة بروست (وجبة)", name_en: "Quarter Broasted Chicken (Meal)", category_ar: "المنيو", category_en: "Menu", description_ar: "(ورك + دبوس)", price: 85, image: "photo2/منيو.jpeg" },
+                    { id: 28, name_ar: "نصف فرخة بروست", name_en: "Half Broasted Chicken", category_ar: "المنيو", category_en: "Menu", description_ar: "ورك + دبوس + صدر", price: 180, image: "photo2/منيو.jpeg" },
+                    { id: 29, name_ar: "دبل بروست", name_en: "Double Broasted", category_ar: "المنيو", category_en: "Menu", description_ar: "3 ورك + 2 دبوس + 3 صدر", price: 340, image: "photo2/منيو.jpeg" },
+                    { id: 30, name_ar: "فرخة على الفحم", name_en: "Charcoal Grilled Chicken", category_ar: "المنيو", category_en: "Menu", description_ar: "فرخة كاملة مشوية على الفحم.", price: 330, image: "photo2/منيو.jpeg" },
+                    { id: 31, name_ar: "نصف فرخة على الفحم", name_en: "Half Charcoal Grilled Chicken", category_ar: "المنيو", category_en: "Menu", description_ar: "نصف فرخة مشوية على الفحم.", price: 175, image: "photo2/منيو.jpeg" },
+                    { id: 32, name_ar: "ربع ورك على الفحم", name_en: "Quarter Grilled Thigh on Charcoal", category_ar: "المنيو", category_en: "Menu", description_ar: "ربع ورك مشوي على الفحم.", price: 95, image: "photo2/منيو.jpeg" },
+                    { id: 33, name_ar: "ربع صدر على الفحم", name_en: "Quarter Grilled Breast on Charcoal", category_ar: "المنيو", category_en: "Menu", description_ar: "ربع صدر مشوي على الفحم.", price: 120, image: "photo2/منيو.jpeg" },
+                    { id: 34, name_ar: "كيلو كفتة فراخ", name_en: "1kg Chicken Kofta", category_ar: "المنيو", category_en: "Menu", description_ar: "كيلو من كفتة الدجاج الشهية.", price: 250, image: "photo2/منيو.jpeg" },
+                    { id: 35, name_ar: "نصف كيلو كفتة فراخ", name_en: "0.5kg Chicken Kofta", category_ar: "المنيو", category_en: "Menu", description_ar: "نصف كيلو من كفتة الدجاج.", price: 140, image: "photo2/منيو.jpeg" },
+                    { id: 36, name_ar: "ربع كيلو كفتة فراخ", name_en: "0.25kg Chicken Kofta", category_ar: "المنيو", category_en: "Menu", description_ar: "ربع كيلو من كفتة الدجاج.", price: 85, image: "photo2/منيو.jpeg" },
+                    { id: 37, name_ar: "ساندوتش كرسبي", name_en: "Crispy Sandwich", category_ar: "المنيو", category_en: "Menu", description_ar: "ساندوتش دجاج كرسبي.", price: 60, image: "photo2/منيو.jpeg" },
+                    { id: 38, name_ar: "ساندوتش سكالوب", name_en: "Scallop Sandwich", category_ar: "المنيو", category_en: "Menu", description_ar: "ساندوتش سكالوب بانيه.", price: 60, image: "photo2/منيو.jpeg" },
+                    { id: 39, name_ar: "ساندوتش زنجر", name_en: "Zinger Sandwich", category_ar: "المنيو", category_en: "Menu", description_ar: "ساندوتش زنجر حار.", price: 60, image: "photo2/منيو.jpeg" },
+                    { id: 40, name_ar: "ساندوتش فاهيتا", name_en: "Fajita Sandwich", category_ar: "المنيو", category_en: "Menu", description_ar: "ساندوتش فاهيتا دجاج.", price: 60, image: "photo2/منيو.jpeg" },
+                    { id: 41, name_ar: "ساندوتش بطاطس عادي", name_en: "Regular Fries Sandwich", category_ar: "المنيو", category_en: "Menu", description_ar: "ساندوتش بطاطس مقلية.", price: 50, image: "photo2/منيو.jpeg" },
+                    { id: 42, name_ar: "ساندوتش بطاطس موتزاريلا", name_en: "Fries with Mozzarella Sandwich", category_ar: "المنيو", category_en: "Menu", description_ar: "ساندوتش بطاطس بجبنة الموتزاريلا.", price: 80, image: "photo2/منيو.jpeg" },
+                ],
+                translations: {
+                    ar: {
+                        store_name: "مطعم حمزة السوري", nav_shop: "المنيو", nav_about: "عنّا", nav_contact: "اتصل بنا",
+                        hero_title: "مطعم حمزة السوري", hero_subtitle: "نقدم لكم أشهى المأكولات السورية الأصيلة في قلب أسيوط", hero_cta: "شاهد المنيو",
+                        menu_title: "قائمة طعامنا", menu_subtitle: "مذاق الشام الأصيل بين يديك، بإشراف شيفات سوريين",
+                        search_placeholder: "ابحث عن طبق...", add_to_cart: "أضف للسلة", view_details: "عرض التفاصيل",
+                        footer_rights: "© 2025 مطعم حمزة السوري. جميع الحقوق محفوظة.", footer_about: "أشهى المأكولات السورية الأصيلة بجودة لا تضاهى.",
+                        cart_title: "سلة الطلبات", cart_total: "الإجمالي", cart_checkout: "إتمام الطلب", cart_empty: "سلة الطلبات فارغة.",
+                        all_categories: "الكل", currency: "ج.م", back_to_shop: "العودة للمنيو",
+                        checkout_title: "إتمام الطلب", order_summary: "ملخص الطلب", shipping_info: "بيانات التوصيل", full_name: "الاسم الكامل", address: "العنوان", phone_number: "رقم الهاتف",
+                        payment_method: "طريقة الدفع", cod: "الدفع عند الاستلام", confirm_order: "تأكيد الطلب",
+                        order_confirmed_title: "تم تأكيد طلبك!", order_confirmed_msg: "شكراً لطلبك. طلبك في الطريق إليك!", order_failed_msg: "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.",
+                        about_title: "تجربة طعام سورية أصيلة", about_text_1: "في مطعم حمزة السوري، نلتزم بتقديم المأكولات الشامية الأصيلة التي تحكي قصة التراث الغني للمطبخ السوري. يستخدم شيفاتنا السوريون المهرة الوصفات التقليدية والمكونات الطازجة لضمان تجربة لا تُنسى.", about_text_2: "من الشاورما اللذيذة والفتات الغنية إلى المشاوي المتقنة والبروستد المقرمش، كل طبق يُعد بعناية وشغف ليُرضي جميع الأذواق.",
+                        feature_1: "وصفات سورية أصيلة", feature_2: "مكونات طازجة يومياً", feature_3: "نكهات غنية ومميزة", feature_4: "تجربة عملاء ممتازة",
+                        testimonials_title: "ماذا يقول ضيوفنا", testimonial_1_text: "\"الشاورما هنا لا يعلى عليها! طعم أصيل يذكرني بدمشق. أنصح بها بشدة!\"", testimonial_1_name: "أحمد محمود", testimonial_1_desc: "زبون دائم",
+                        testimonial_2_text: "\"جودة البروستد ممتازة والفتة غنية جداً. تجربة سورية متكاملة وممتعة.\"", testimonial_2_name: "فاطمة الزهراء", testimonial_2_desc: "زائرة جديدة",
+                        testimonial_3_text: "\"أفضل مطعم سوري في أسيوط! الأسعار مناسبة والطعم رائع. أوصي بالميكس عربي.\"", testimonial_3_name: "كريم عبد الله", testimonial_3_desc: "عاشق الطعام السوري",
+                        contact_subtitle: "نسعد باستقبالكم وطلباتكم.", contact_details: "معلومات التواصل", address_value: "خلف برج العلا شارع الأزهر ميدان اسماء الله حي شرق، 55WG+PPR، الوليدية الوسطانية، قسم ثان أسيوط، محافظة أسيوط 2091203، مصر",
+                        proceed_to_review: "متابعة للمراجعة", order_review: "مراجعة الطلب", edit_info: "تعديل", shipping_to: "سيتم التوصيل إلى:",
+                        cs_title: "خدمة العملاء", cs_subtitle: "تواصل مباشر وسريع للرد على جميع استفساراتكم. سواء كنتم ترغبون في الاستفسار عن قائمة الطعام، متابعة طلب، أو تقديم أي ملاحظات، فريقنا جاهز لمساعدتكم.", cs_whatsapp: "تحدث معنا عبر واتساب", cs_call: "اتصل بنا مباشرة",
+                        toast_added_to_cart: "تمت إضافة المنتج إلى السلة!",
+                        // Admin translations
+                        orders_dashboard: "لوحة الطلبات", logout: "تسجيل الخروج", no_orders: "لا توجد طلبات حالياً.", order_id: "رقم الطلب", customer_info: "بيانات العميل", order_items: "الطلبات", total_price: "السعر الإجمالي", order_date: "تاريخ الطلب",
+                    },
+                    en: {
+                        store_name: "Hamza's Syrian Restaurant", nav_shop: "Menu", nav_about: "About Us", nav_contact: "Contact Us",
+                        hero_title: "Hamza's Syrian Restaurant", hero_subtitle: "Serving the most delicious authentic Syrian cuisine in the heart of Assiut", hero_cta: "View The Menu",
+                        menu_title: "Our Menu", menu_subtitle: "The authentic taste of Damascus, supervised by Syrian chefs.",
+                        search_placeholder: "Search for a dish...", add_to_cart: "Add to Cart", view_details: "View Details",
+                        footer_rights: "© 2025 Hamza's Syrian Restaurant. All rights reserved.", footer_about: "The most delicious authentic Syrian food with unmatched quality.",
+                        cart_title: "Order Cart", cart_total: "Total", cart_checkout: "Checkout", cart_empty: "Your cart is empty.",
+                        all_categories: "All", currency: "EGP", back_to_shop: "Back to Menu",
+                        checkout_title: "Checkout", order_summary: "Order Summary", shipping_info: "Delivery Information", full_name: "Full Name", address: "Address", phone_number: "Phone Number",
+                        payment_method: "Payment Method", cod: "Cash on Delivery", confirm_order: "Confirm Order",
+                        order_confirmed_title: "Your Order is Confirmed!", order_confirmed_msg: "Thank you for your order. It's on its way to you!", order_failed_msg: "An error occurred while placing the order. Please try again.",
+                        about_title: "An Authentic Syrian Dining Experience", about_text_1: "At Hamza's Syrian Restaurant, we are committed to serving authentic Levantine cuisine that tells the story of the rich heritage of the Syrian kitchen. Our skilled chefs use traditional recipes and fresh ingredients to ensure an unforgettable experience.", about_text_2: "From delicious shawarma and rich fatteh to perfectly grilled items and crispy broasted chicken, every dish is prepared with care and passion to satisfy all tastes.",
+                        feature_1: "Authentic Syrian Recipes", feature_2: "Daily Fresh Ingredients", feature_3: "Rich & Distinct Flavors", feature_4: "Excellent Customer Experience",
+                        testimonials_title: "What Our Guests Say", testimonial_1_text: "\"The shawarma here is unbeatable! An authentic taste that reminds me of Damascus. Highly recommended!\"", testimonial_1_name: "Ahmed Mahmoud", testimonial_1_desc: "Regular Customer",
+                        testimonial_2_text: "\"The quality of the broasted chicken is excellent and the fatteh is very rich. A complete and enjoyable Syrian experience.\"", testimonial_2_name: "Fatima Al-Zahra", testimonial_2_desc: "New Visitor",
+                        testimonial_3_text: "\"The best Syrian restaurant in Assiut! The prices are reasonable and the taste is wonderful. I recommend the Arabic mix.\"", testimonial_3_name: "Karim Abdullah", testimonial_3_desc: "Syrian Food Lover",
+                        contact_subtitle: "We are happy to receive you and your inquiries.", contact_details: "Contact Information", address_value: "Behind Al-Ola Tower, Al-Azhar St, Asyut, Egypt",
+                        proceed_to_review: "Proceed to Review", order_review: "Order Review", edit_info: "Edit", shipping_to: "Delivering to:",
+                        cs_title: "Customer Service", cs_subtitle: "Direct and fast communication to answer all your inquiries. Whether you want to ask about the menu, track an order, or provide feedback, our team is ready to help.", cs_whatsapp: "Chat with us on WhatsApp", cs_call: "Call Us Directly",
+                        toast_added_to_cart: "Item added to cart!",
+                        // Admin translations
+                        orders_dashboard: "Orders Dashboard", logout: "Logout", no_orders: "No orders yet.", order_id: "Order ID", customer_info: "Customer Info", order_items: "Items", total_price: "Total Price", order_date: "Order Date",
+                    }
+                }
+            };
+
+            // --- DOM Elements ---
+            const mainPage = document.getElementById('main-page');
+            const productDetailPage = document.getElementById('product-detail-page');
+            const checkoutPage = document.getElementById('checkout-page');
+            const confirmationPage = document.getElementById('confirmation-page');
+            const adminOrdersPage = document.getElementById('admin-orders-page');
+            const menuGrid = document.getElementById('menu-grid');
+            const categoryFilters = document.getElementById('category-filters');
+            const searchInput = document.getElementById('search-input');
+            const cartButton = document.getElementById('cart-button');
+            const cartModal = document.getElementById('cart-modal');
+            const closeCartModal = document.getElementById('close-cart-modal');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
+            const langSwitcher = document.getElementById('lang-switcher');
+            const langText = document.getElementById('lang-text');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const checkoutButton = document.getElementById('checkout-button');
+            const cartFooter = document.getElementById('cart-footer');
+            const toast = document.getElementById('toast');
+
+            const t = (key) => state.translations[state.lang][key] || key;
+            
+            // --- Toast Notification ---
+            const showToast = (message) => {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            };
+
+            // --- Page & Component Rendering ---
+            const showPage = (pageId) => {
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                window.scrollTo(0, 0);
+            };
+
+            const renderMenuItems = (itemsToRender = state.products) => {
+                menuGrid.innerHTML = '';
+                if (itemsToRender.length === 0) {
+                    menuGrid.innerHTML = `<p class="col-span-full text-center text-gray-500">${t('cart_empty')}</p>`;
+                    return;
+                }
+                itemsToRender.forEach(product => {
+                    const productName = state.lang === 'ar' ? product.name_ar : product.name_en;
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-xl shadow-lg overflow-hidden flex flex-col menu-item';
+                    
+                    card.innerHTML = `
+                        <div class="overflow-hidden h-64 cursor-pointer product-card-details" data-id="${product.id}">
+                            <img src="${product.image}" alt="${productName}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x400/f97316/white?text=Image+Not+Found';">
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col">
+                            <h3 class="font-bold text-xl mb-2 text-gray-800">${productName}</h3>
+                            <p class="text-2xl font-bold text-orange-600 mb-5">${product.price.toLocaleString('ar-EG')} ${t('currency')}</p>
+                            <button class="add-to-cart-btn-grid mt-auto w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold" data-id="${product.id}">${t('add_to_cart')}</button>
+                        </div>
+                    `;
+                    menuGrid.appendChild(card);
+                });
+            };
+            
+            const renderProductDetail = (product) => {
+                const productName = state.lang === 'ar' ? product.name_ar : product.name_en;
+                const productDesc = state.lang === 'ar' ? product.description_ar : product.description_en;
+                productDetailPage.innerHTML = `
+                    <div class="mb-6"><button class="home-link text-orange-600 hover:underline">&larr; ${t('back_to_shop')}</button></div>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="flex flex-col md:flex-row">
+                            <div class="w-full md:w-1/2 p-4"><img src="${product.image}" alt="${productName}" class="w-full h-auto object-cover rounded-lg" onerror="this.onerror=null;this.src='https://placehold.co/600x600/f97316/white?text=Image+Not+Found';"></div>
+                            <div class="w-full md:w-1/2 p-6 flex flex-col justify-center">
+                                <h2 class="text-3xl font-bold mb-4">${productName}</h2>
+                                <p class="text-gray-700 mb-6 text-lg">${productDesc}</p>
+                                <p class="text-4xl font-bold text-orange-600 mb-6">${product.price.toLocaleString('ar-EG')} ${t('currency')}</p>
+                                <button class="add-to-cart-btn w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition-all text-lg" data-id="${product.id}">${t('add_to_cart')}</button>
+                            </div>
+                        </div>
+                    </div>`;
+                showPage('product-detail-page');
+            };
+
+            const renderCheckoutPage = (isReview = false) => {
+                let orderSummaryHTML = '';
+                state.cart.forEach(item => {
+                    const itemName = state.lang === 'ar' ? item.name_ar : item.name_en;
+                    orderSummaryHTML += `<div class="flex justify-between items-center text-sm py-2 border-b"><span>${itemName} x ${item.quantity}</span><span>${(item.price * item.quantity).toLocaleString('ar-EG')} ${t('currency')}</span></div>`;
+                });
+                const totalPrice = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                if (!isReview) {
+                    checkoutPage.innerHTML = `
+                        <h2 class="text-3xl font-bold text-center mb-8">${t('checkout_title')}</h2>
+                        <div class="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-xl font-bold mb-4">${t('shipping_info')}</h3>
+                                <form id="shipping-form" class="space-y-4">
+                                    <div><label for="full-name" class="block text-sm font-medium text-gray-700 required-field">${t('full_name')}</label><input type="text" id="full-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-orange-600" required></div>
+                                    <div><label for="address" class="block text-sm font-medium text-gray-700 required-field">${t('address')}</label><input type="text" id="address" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-orange-600" required></div>
+                                    <div><label for="phone" class="block text-sm font-medium text-gray-700 required-field">${t('phone_number')}</label><input type="tel" id="phone" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-orange-600" required></div>
+                                    <button id="review-order-btn" type="submit" class="mt-6 w-full bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-700 transition-all">${t('proceed_to_review')}</button>
+                                </form>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-xl font-bold mb-4">${t('order_summary')}</h3>
+                                <div class="space-y-2">${orderSummaryHTML}</div>
+                                <div class="flex justify-between font-bold text-lg pt-4 mt-4 border-t"><span>${t('cart_total')}</span><span>${totalPrice.toLocaleString('ar-EG')} ${t('currency')}</span></div>
+                            </div>
+                        </div>`;
+                } else {
+                     checkoutPage.innerHTML = `
+                        <h2 class="text-3xl font-bold text-center mb-8">${t('order_review')}</h2>
+                        <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="text-xl font-bold mb-4 flex justify-between items-center">${t('shipping_to')} <button id="edit-info-btn" class="text-sm text-orange-600 hover:underline">${t('edit_info')}</button></h3>
+                                    <div class="text-gray-600 space-y-2">
+                                        <p><strong>${t('full_name')}:</strong> ${state.shippingInfo.name}</p>
+                                        <p><strong>${t('address')}:</strong> ${state.shippingInfo.address}</p>
+                                        <p><strong>${t('phone_number')}:</strong> ${state.shippingInfo.phone}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-4">${t('payment_method')}</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-3 border rounded-md"><input id="cod" name="payment" type="radio" class="focus:ring-orange-600 h-4 w-4 text-orange-600 border-gray-300" checked><label for="cod" class="ml-3 rtl:mr-3 rtl:ml-0 block text-sm font-medium text-gray-700">${t('cod')}</label></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <h3 class="text-xl font-bold mb-4">${t('order_summary')}</h3>
+                                <div class="space-y-2">${orderSummaryHTML}</div>
+                                <div class="flex justify-between font-bold text-lg pt-4 mt-4 border-t"><span>${t('cart_total')}</span><span>${totalPrice.toLocaleString('ar-EG')} ${t('currency')}</span></div>
+                            </div>
+                             <button id="confirm-order-btn" class="mt-8 w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition-all flex items-center justify-center">
+                                 <span class="btn-text">${t('confirm_order')}</span>
+                                 <span class="spinner hidden"></span>
+                             </button>
+                        </div>`;
+                }
+                showPage('checkout-page');
+            };
+
+            const renderCart = () => {
+                cartItemsContainer.innerHTML = '';
+                if (state.cart.length === 0) {
+                    cartItemsContainer.innerHTML = `<p class="text-center text-gray-500 p-4">${t('cart_empty')}</p>`;
+                    cartFooter.classList.add('hidden');
+                } else {
+                    cartFooter.classList.remove('hidden');
+                    state.cart.forEach(item => {
+                        const itemName = state.lang === 'ar' ? item.name_ar : item.name_en;
+                        const cartItem = document.createElement('div');
+                        cartItem.className = 'flex justify-between items-center mb-4';
+                        cartItem.innerHTML = `
+                            <div class="flex items-center">
+                                <img src="${item.image}" alt="${itemName}" class="w-16 h-16 object-cover rounded-md mr-4 rtl:mr-0 rtl:ml-4" onerror="this.onerror=null;this.src='https://placehold.co/100x100/f97316/white?text=Img';">
+                                <div><h4 class="font-bold text-sm">${itemName}</h4><p class="text-xs text-gray-600">${item.price.toLocaleString('ar-EG')} ${t('currency')}</p></div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="flex items-center border rounded-md">
+                                    <button class="quantity-btn px-2 py-1" data-id="${item.id}" data-change="-1">-</button>
+                                    <span class="px-3 text-sm">${item.quantity}</span>
+                                    <button class="quantity-btn px-2 py-1" data-id="${item.id}" data-change="1">+</button>
+                                </div>
+                                <button class="remove-from-cart-btn text-red-500 hover:text-red-700 mx-2 rtl:mx-2 text-xl" data-id="${item.id}">&times;</button>
+                            </div>`;
+                        cartItemsContainer.appendChild(cartItem);
+                    });
+                }
+                updateCartSummary();
+            };
+
+            const updateCartSummary = () => {
+                const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+                const totalPrice = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                cartCount.textContent = totalItems;
+                cartTotal.textContent = `${totalPrice.toLocaleString('ar-EG')} ${t('currency')}`;
+            };
+            
+            const renderCategories = () => {
+                const categories = [...new Set(state.products.map(p => state.lang === 'ar' ? p.category_ar : p.category_en))];
+                categoryFilters.innerHTML = `<button class="category-btn active py-2 px-4 rounded-full text-sm font-semibold border" data-category="all">${t('all_categories')}</button>`;
+                categories.forEach(category => {
+                    categoryFilters.innerHTML += `<button class="category-btn py-2 px-4 rounded-full text-sm font-semibold border" data-category="${category}">${category}</button>`;
+                });
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    const isActive = btn.classList.contains('active');
+                    btn.classList.toggle('bg-orange-600', isActive);
+                    btn.classList.toggle('text-white', isActive);
+                    btn.classList.toggle('border-orange-600', isActive);
+                    btn.classList.toggle('bg-white', !isActive);
+                    btn.classList.toggle('text-gray-600', !isActive);
+                    btn.classList.toggle('border-gray-300', !isActive);
+                });
+            };
+
+            const renderConfirmationPage = (isSuccess = true) => {
+                confirmationPage.innerHTML = `
+                    <div class="text-center bg-white p-10 rounded-lg shadow-lg max-w-2xl mx-auto">
+                        <div class="w-20 h-20 mx-auto mb-4 ${isSuccess ? 'text-green-500 bg-green-100' : 'text-red-500 bg-red-100'} rounded-full flex items-center justify-center">
+                           <i class="fas ${isSuccess ? 'fa-check' : 'fa-times'} text-4xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold mb-2">${isSuccess ? t('order_confirmed_title') : 'Error'}</h2>
+                        <p class="text-gray-600 mb-6">${isSuccess ? t('order_confirmed_msg') : t('order_failed_msg')}</p>
+                        <button class="home-link bg-orange-600 text-white font-bold py-3 px-8 rounded-full hover:bg-orange-700 transition-all">${t('back_to_shop')}</button>
+                    </div>`;
+                showPage('confirmation-page');
+            };
+
+            const renderAdminOrdersPage = () => {
+                adminOrdersPage.innerHTML = `
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-bold" data-translate-key="orders_dashboard">${t('orders_dashboard')}</h2>
+                        <button id="logout-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition" data-translate-key="logout">${t('logout')}</button>
+                    </div>
+                    <div id="orders-list" class="space-y-6">
+                        <div class="text-center py-10"><div class="spinner mx-auto" style="border-left-color: #f97316;"></div></div>
+                    </div>
+                `;
+                showPage('admin-orders-page');
+                fetchAndDisplayOrders();
+            };
+
+            // --- Core Logic (Cart, Filter, etc.) ---
+            const addToCart = (productId) => {
+                const product = state.products.find(p => p.id === productId);
+                if (!product) return;
+                const cartItem = state.cart.find(item => item.id === productId);
+                if (cartItem) cartItem.quantity++;
+                else state.cart.push({ ...product, quantity: 1 });
+                renderCart();
+                showToast(t('toast_added_to_cart'));
+            };
+
+            const changeQuantity = (productId, change) => {
+                const cartItem = state.cart.find(item => item.id === productId);
+                if (cartItem) {
+                    cartItem.quantity += change;
+                    if (cartItem.quantity <= 0) removeFromCart(productId);
+                    else renderCart();
+                }
+            };
+
+            const removeFromCart = (productId) => {
+                state.cart = state.cart.filter(item => item.id !== productId);
+                renderCart();
+            };
+
+            const filterAndSearch = () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const activeCategoryBtn = document.querySelector('.category-btn.active');
+                const activeCategory = activeCategoryBtn ? activeCategoryBtn.dataset.category : 'all';
+                let filteredProducts = state.products.filter(product => {
+                    const productName = (state.lang === 'ar' ? product.name_ar : product.name_en).toLowerCase();
+                    const productCategory = state.lang === 'ar' ? product.category_ar : product.category_en;
+                    const matchesCategory = activeCategory === 'all' || productCategory.toLowerCase() === activeCategory.toLowerCase();
+                    const matchesSearch = productName.includes(searchTerm);
+                    return matchesCategory && matchesSearch;
+                });
+                renderMenuItems(filteredProducts);
+            };
+
+            const switchLanguage = () => {
+                state.lang = state.lang === 'ar' ? 'en' : 'ar';
+                document.documentElement.lang = state.lang;
+                document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+                langText.textContent = state.lang === 'ar' ? 'English' : 'العربية';
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.dataset.translateKey;
+                    if (t(key)) {
+                        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = t(key);
+                        else el.textContent = t(key);
+                    }
+                });
+                filterAndSearch();
+                renderCategories();
+                renderCart();
+            };
+            
+            const confirmOrder = async () => {
+                const confirmBtn = document.getElementById('confirm-order-btn');
+                const btnText = confirmBtn.querySelector('.btn-text');
+                const spinner = confirmBtn.querySelector('.spinner');
+
+                btnText.classList.add('hidden');
+                spinner.classList.remove('hidden');
+                confirmBtn.disabled = true;
+                
+                const user = auth.currentUser;
+                if (!user) {
+                    console.error("User not authenticated.");
+                    renderConfirmationPage(false);
+                    return;
+                }
+
+                const orderData = {
+                    userId: user.uid,
+                    shippingInfo: state.shippingInfo,
+                    items: state.cart.map(item => ({id: item.id, name: item.name_ar, quantity: item.quantity, price: item.price})),
+                    totalPrice: state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    status: 'new',
+                    createdAt: serverTimestamp()
+                };
+
+                try {
+                    const ordersCollection = collection(db, "orders");
+                    await addDoc(ordersCollection, orderData);
+                    state.cart = [];
+                    renderCart();
+                    renderConfirmationPage(true);
+                } catch (error) {
+                    console.error("Error writing document: ", error);
+                    renderConfirmationPage(false);
+                } finally {
+                    btnText.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                    confirmBtn.disabled = false;
+                }
+            };
+            
+            const fetchAndDisplayOrders = () => {
+                const ordersList = document.getElementById('orders-list');
+                const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+                
+                onSnapshot(q, (snapshot) => {
+                    if (snapshot.empty) {
+                        ordersList.innerHTML = `<p class="text-center text-gray-500 py-10" data-translate-key="no_orders">${t('no_orders')}</p>`;
+                        return;
+                    }
+                    ordersList.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        const orderId = doc.id;
+                        const date = order.createdAt ? order.createdAt.toDate().toLocaleString(state.lang === 'ar' ? 'ar-EG' : 'en-US') : 'N/A';
+                        
+                        const itemsHtml = order.items.map(item => `
+                            <li class="flex justify-between text-sm">
+                                <span>${item.name} (x${item.quantity})</span>
+                                <span>${(item.price * item.quantity).toLocaleString('ar-EG')} ${t('currency')}</span>
+                            </li>
+                        `).join('');
+
+                        const orderCard = document.createElement('div');
+                        orderCard.className = 'bg-white p-6 rounded-lg shadow-md';
+                        orderCard.innerHTML = `
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <h4 class="font-bold mb-2" data-translate-key="customer_info">${t('customer_info')}</h4>
+                                    <p><strong>${t('full_name')}:</strong> ${order.shippingInfo.name}</p>
+                                    <p><strong>${t('address')}:</strong> ${order.shippingInfo.address}</p>
+                                    <p><strong>${t('phone_number')}:</strong> ${order.shippingInfo.phone}</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold mb-2" data-translate-key="order_items">${t('order_items')}</h4>
+                                    <ul class="space-y-1">${itemsHtml}</ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold mb-2" data-translate-key="order_id">${t('order_id')}</h4>
+                                    <p class="text-sm text-gray-500 break-all">${orderId}</p>
+                                    <h4 class="font-bold mt-4 mb-2" data-translate-key="total_price">${t('total_price')}</h4>
+                                    <p class="font-bold text-orange-600 text-lg">${order.totalPrice.toLocaleString('ar-EG')} ${t('currency')}</p>
+                                    <h4 class="font-bold mt-4 mb-2" data-translate-key="order_date">${t('order_date')}</h4>
+                                    <p class="text-sm text-gray-500">${date}</p>
+                                </div>
+                            </div>
+                        `;
+                        ordersList.appendChild(orderCard);
+                    });
+                }, (error) => {
+                    console.error("Error fetching orders: ", error);
+                    ordersList.innerHTML = `<p class="text-center text-red-500 py-10">Error fetching orders. Make sure your Firestore rules are set up correctly.</p>`;
+                });
+            };
+
+            // --- Event Listeners ---
+            document.body.addEventListener('click', (e) => {
+                // Prevent form submission from reloading the page
+                if (e.target.closest('#shipping-form') && e.target.tagName === 'BUTTON') {
+                    e.preventDefault();
+                }
+
+                const productCardDetails = e.target.closest('.product-card-details');
+                if (productCardDetails) {
+                    const product = state.products.find(p => p.id === parseInt(productCardDetails.dataset.id));
+                    if (product) renderProductDetail(product);
+                }
+                if (e.target.matches('.add-to-cart-btn-grid') || e.target.matches('#product-detail-page .add-to-cart-btn')) {
+                    addToCart(parseInt(e.target.dataset.id));
+                }
+                if (e.target.closest('.home-link')) {
+                    e.preventDefault();
+                    if(document.getElementById('main-page').classList.contains('active')) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                         window.location.href = window.location.pathname + window.location.search;
+                    }
+                }
+                if (e.target.closest('.nav-link')) {
+                    e.preventDefault();
+                    showPage('main-page');
+                    setTimeout(() => {
+                        const targetId = e.target.closest('.nav-link').getAttribute('href');
+                        document.querySelector(targetId)?.scrollIntoView();
+                        mobileMenu.classList.add('hidden');
+                    }, 50);
+                }
+                if (e.target.matches('.category-btn')) {
+                    document.querySelectorAll('.category-btn').forEach(btn => {
+                        btn.classList.remove('active', 'bg-orange-600', 'text-white', 'border-orange-600');
+                        btn.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+                    });
+                    e.target.classList.add('active', 'bg-orange-600', 'text-white', 'border-orange-600');
+                    e.target.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+                    filterAndSearch();
+                }
+                if (e.target.matches('.quantity-btn')) {
+                    changeQuantity(parseInt(e.target.dataset.id), parseInt(e.target.dataset.change));
+                }
+                if (e.target.matches('.remove-from-cart-btn')) {
+                    removeFromCart(parseInt(e.target.dataset.id));
+                }
+                if (e.target.matches('#review-order-btn')) {
+                    const form = document.getElementById('shipping-form');
+                    if (form.checkValidity()) {
+                        state.shippingInfo = {
+                            name: document.getElementById('full-name').value,
+                            address: document.getElementById('address').value,
+                            phone: document.getElementById('phone').value,
+                        };
+                        renderCheckoutPage(true);
+                    } else { form.reportValidity(); }
+                }
+                if (e.target.matches('#edit-info-btn')) {
+                    renderCheckoutPage(false);
+                    document.getElementById('full-name').value = state.shippingInfo.name;
+                    document.getElementById('address').value = state.shippingInfo.address;
+                    document.getElementById('phone').value = state.shippingInfo.phone;
+                }
+                if (e.target.matches('#confirm-order-btn')) {
+                    confirmOrder();
+                }
+                if (e.target.matches('#logout-btn')) {
+                    window.location.href = window.location.pathname;
+                }
+            });
+
+            searchInput.addEventListener('input', filterAndSearch);
+            cartButton.addEventListener('click', () => cartModal.classList.remove('hidden'));
+            closeCartModal.addEventListener('click', () => cartModal.classList.add('hidden'));
+            langSwitcher.addEventListener('click', switchLanguage);
+            mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+            checkoutButton.addEventListener('click', () => {
+                cartModal.classList.add('hidden');
+                renderCheckoutPage();
+            });
+
+            // --- Initialization ---
+            const initializeStore = () => {
+                const adminPassword = 'admin123';
+                const hash = window.location.hash.substring(1);
+
+                if (hash === adminPassword) {
+                    renderAdminOrdersPage();
+                } else {
+                    showPage('main-page');
+                }
+
+                renderMenuItems();
+                renderCategories();
+                renderCart();
+                
+                // Set initial language and translate UI
+                const initialLang = 'ar';
+                if (initialLang !== state.lang) {
+                    switchLanguage();
+                } else {
+                     document.querySelectorAll('[data-translate-key]').forEach(el => {
+                         const key = el.dataset.translateKey;
+                         if (t(key)) {
+                             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = t(key);
+                             else el.textContent = t(key);
+                         }
+                     });
+                }
+            };
+
+            initializeStore();
+        });
+    </script>
+</body>
+</html>
